@@ -52,28 +52,62 @@ const FacultyDashboard = () => {
 
   const fetchData = useCallback(async () => {
     try {
-      const [dashRes, studentsRes, pendingRes, noticesRes] =
-        await Promise.all([
+      const results = await Promise.allSettled([
           axiosInstance.get("/faculty/dashboard"),
           axiosInstance.get("/faculty/students"),
           axiosInstance.get("/faculty/pending"),
           axiosInstance.get("/faculty/notices"),
-        ]);
+      ]);
+      let failedRequests = false;
 
-      if (dashRes.data.success) {
-        setDashboard(dashRes.data);
+      const [dashResult, studentsResult, pendingResult, noticesResult] = results;
+      if (dashResult.status === "fulfilled" && dashResult.value.data.success) {
+        setDashboard(dashResult.value.data);
+      } else {
+        failedRequests = true;
+        if (dashResult.status === "rejected") {
+          console.error("Faculty dashboard stats request failed:", dashResult.reason);
+        }
       }
 
-      if (studentsRes.data.success) {
-        setStudents(studentsRes.data.students);
+      if (
+        studentsResult.status === "fulfilled" &&
+        studentsResult.value.data.success
+      ) {
+        setStudents(studentsResult.value.data.students);
+      } else {
+        failedRequests = true;
+        if (studentsResult.status === "rejected") {
+          console.error("Faculty student list request failed:", studentsResult.reason);
+        }
       }
 
-      if (pendingRes.data.success) {
-        setPending(pendingRes.data.certificates);
+      if (
+        pendingResult.status === "fulfilled" &&
+        pendingResult.value.data.success
+      ) {
+        setPending(pendingResult.value.data.certificates);
+      } else {
+        failedRequests = true;
+        if (pendingResult.status === "rejected") {
+          console.error("Faculty pending certificates request failed:", pendingResult.reason);
+        }
       }
 
-      if (noticesRes.data.success) {
-        setNotices(noticesRes.data.notices || []);
+      if (
+        noticesResult.status === "fulfilled" &&
+        noticesResult.value.data.success
+      ) {
+        setNotices(noticesResult.value.data.notices || []);
+      } else {
+        failedRequests = true;
+        if (noticesResult.status === "rejected") {
+          console.error("Faculty notice list request failed:", noticesResult.reason);
+        }
+      }
+
+      if (failedRequests) {
+        toast.error("Some dashboard information could not be loaded. Please refresh.");
       }
     } catch (error) {
       toast.error("Failed to load dashboard data.");

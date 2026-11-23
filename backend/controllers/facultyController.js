@@ -139,53 +139,57 @@ const getDepartmentStudents = async (req, res) => {
       .select("-password") // Never return password
       .sort({ name: 1 });  // Sort alphabetically by name
 
-    // ── Step 4: Enrich with certificate summary ──
-    // For each student, add a quick cert count summary
-    // This gives faculty a quick overview without
-    // having to fetch certificates separately
-    const studentsWithStats = await Promise.all(
-      students.map(async (student) => {
-        // Count certs by status for this student
-        const [total, pending, approved, rejected] = await Promise.all([
-          Certificate.countDocuments({ student: student._id }),
-          Certificate.countDocuments({ student: student._id, status: "pending" }),
-          Certificate.countDocuments({ student: student._id, status: "approved" }),
-          Certificate.countDocuments({ student: student._id, status: "rejected" }),
-        ]);
-
-        // Calculate total approved credits
-        const creditsResult = await Certificate.aggregate([
+    // ── Step 4: Aggregate certificate summaries in one query ──
+    // Avoid issuing five separate queries for every student. That
+    // made this route very slow for full departments and could keep
+    // the faculty dashboard in its loading state.
+    const certificateSummaries = studentIds.length
+      ? await Certificate.aggregate([
+          { $match: { student: { $in: studentIds } } },
           {
-            $match: {
-              student: student._id,
-              status: "approved",
-            },
-          },
-          {
-            // $group sums up all creditsEarned values
             $group: {
-              _id: null,
-              totalCredits: { $sum: "$creditsEarned" },
+              _id: "$student",
+              total: { $sum: 1 },
+              pending: {
+                $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] },
+              },
+              approved: {
+                $sum: { $cond: [{ $eq: ["$status", "approved"] }, 1, 0] },
+              },
+              rejected: {
+                $sum: { $cond: [{ $eq: ["$status", "rejected"] }, 1, 0] },
+              },
+              totalCredits: {
+                $sum: {
+                  $cond: [
+                    { $eq: ["$status", "approved"] },
+                    { $ifNull: ["$creditsEarned", 0] },
+                    0,
+                  ],
+                },
+              },
             },
           },
-        ]);
+        ])
+      : [];
 
-        const totalCredits =
-          creditsResult.length > 0 ? creditsResult[0].totalCredits : 0;
-
-        // Return student as plain object + stats
-        return {
-          ...student.toObject(), // Convert Mongoose doc to plain JS object
-          certStats: {
-            total,
-            pending,
-            approved,
-            rejected,
-            totalCredits,
-          },
-        };
-      })
+    const summaryByStudentId = new Map(
+      certificateSummaries.map((summary) => [String(summary._id), summary])
     );
+
+    const studentsWithStats = students.map((student) => {
+      const summary = summaryByStudentId.get(String(student._id));
+      return {
+        ...student.toObject(),
+        certStats: {
+          total: summary?.total ?? 0,
+          pending: summary?.pending ?? 0,
+          approved: summary?.approved ?? 0,
+          rejected: summary?.rejected ?? 0,
+          totalCredits: summary?.totalCredits ?? 0,
+        },
+      };
+    });
 
     // ── Step 5: Send response ─────────────────────
     res.status(200).json({
