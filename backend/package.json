@@ -1,0 +1,43 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "seed:admin": "node utils/seedAdmin.js",
+    "seed:student": "node utils/seedStudent.js",
+    "seed:faculty": "node utils/seedFaculty.js",
+    "seed:all": "node utils/seedAdmin.js && node utils/seedStudent.js && node utils/seedFaculty.js",
+    "sync:students": "node utils/resyncAllStudents.js"
+  },
+  "keywords": [
+    "mern",
+    "certificates",
+    "jwt",
+    "cloudinary"
+  ],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@napi-rs/canvas": "^1.1.1",
+    "archiver": "^5.3.2",
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^1.41.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "exceljs": "^4.4.0",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "jsqr": "^1.4.0",
+    "mongoose": "^8.24.0",
+    "multer": "^2.1.1",
+    "multer-storage-cloudinary": "^4.0.0",
+    "pdfjs-dist": "^6.5.438",
+    "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
