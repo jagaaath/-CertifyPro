@@ -138,6 +138,7 @@ const getDepartmentStudents = async (req, res) => {
     const students = await Student.find(filter)
       .select("-password") // Never return password
       .sort({ name: 1 });  // Sort alphabetically by name
+    const studentIds = students.map((student) => student._id);
 
     // ── Step 4: Aggregate certificate summaries in one query ──
     // Avoid issuing five separate queries for every student. That
