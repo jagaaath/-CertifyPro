@@ -8,6 +8,7 @@ import Navbar from "../../components/Navbar";
 import CertificateCard from "../../components/CertificateCard";
 import StatsCard from "../../components/StatsCard";
 import Loader from "../../components/Loader";
+import NoticePreviewModal from "../../components/NoticePreviewModal";
 
 const TABS = [
   { key: "all", label: "All" },
@@ -50,23 +51,10 @@ const NoticeBoard = ({ notices }) => {
         </div>
       )}
 
-      {selectedNotice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-label="Notice details" onClick={() => setSelectedNotice(null)}>
-          <div className="flex h-[90vh] max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl" onClick={(event) => event.stopPropagation()}>
-            <div className="flex items-start justify-between gap-4 border-b border-gray-200 p-4 sm:p-5">
-              <div>
-                <h3 className="font-semibold text-gray-900">Notice</h3>
-                <p className="mt-1 text-sm text-gray-600">{selectedNotice.description}</p>
-              </div>
-              <button type="button" onClick={() => setSelectedNotice(null)} className="rounded-lg px-3 py-1 text-xl text-gray-500 hover:bg-gray-100" aria-label="Close notice">×</button>
-            </div>
-            <iframe title="Full notice PDF" src={`${selectedNotice.fileUrl}#toolbar=1&navpanes=0`} className="min-h-0 flex-1 w-full bg-gray-100" />
-            <div className="flex justify-end border-t border-gray-200 p-3">
-              <a href={selectedNotice.fileUrl} target="_blank" rel="noopener noreferrer" className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Open PDF in new tab</a>
-            </div>
-          </div>
-        </div>
-      )}
+      <NoticePreviewModal
+        notice={selectedNotice}
+        onClose={() => setSelectedNotice(null)}
+      />
     </section>
   );
 };

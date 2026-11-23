@@ -21,6 +21,11 @@ const noticeSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    pageCount: {
+      type: Number,
+      default: 1,
+      min: 1,
+    },
     publicId: {
       type: String,
       required: true,

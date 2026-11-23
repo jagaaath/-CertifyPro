@@ -68,6 +68,7 @@ const createNotice = async (req, res) => {
       previewUrl: uploadedFile.secure_url
         .replace("/upload/", "/upload/pg_1,w_480,c_limit/")
         .replace(/\.pdf(?:\?.*)?$/i, ".jpg"),
+      pageCount: Math.max(1, Number(uploadedFile.pages) || 1),
       publicId: uploadedFile.public_id,
       originalName: req.file.originalname,
       createdBy: req.user._id,

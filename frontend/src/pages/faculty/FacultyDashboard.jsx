@@ -7,6 +7,7 @@ import axiosInstance from "../../api/axios";
 import Navbar from "../../components/Navbar";
 import StatsCard from "../../components/StatsCard";
 import Loader from "../../components/Loader";
+import NoticePreviewModal from "../../components/NoticePreviewModal";
 import DownloadFacultyExcelButton from "../../components/DownloadFacultyExcelButton";
 
 // ============================================
@@ -41,6 +42,7 @@ const FacultyDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [verifying, setVerifying] = useState(null);
   const [notices, setNotices] = useState([]);
+  const [selectedNotice, setSelectedNotice] = useState(null);
   const [noticeFile, setNoticeFile] = useState(null);
   const [noticeDescription, setNoticeDescription] = useState("");
   const [publishingNotice, setPublishingNotice] = useState(false);
@@ -745,7 +747,7 @@ const FacultyDashboard = () => {
                       <p className="min-h-10 text-sm text-gray-600">{notice.description}</p>
                       <p className="mt-2 text-xs text-gray-400">{new Date(notice.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</p>
                       <div className="mt-4 flex gap-2">
-                        <a href={notice.fileUrl} target="_blank" rel="noopener noreferrer" className="flex-1 rounded-lg bg-gray-100 px-3 py-2 text-center text-sm font-medium text-gray-700 hover:bg-gray-200">Open PDF</a>
+                        <button type="button" onClick={() => setSelectedNotice(notice)} className="flex-1 rounded-lg bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 hover:bg-blue-100">Open notice</button>
                         <button type="button" onClick={() => handleDeleteNotice(notice._id)} disabled={removingNotice === notice._id} className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-100 disabled:opacity-50">{removingNotice === notice._id ? "Removing…" : "Remove"}</button>
                       </div>
                     </article>
@@ -756,6 +758,10 @@ const FacultyDashboard = () => {
           </section>
         )}
 
+        <NoticePreviewModal
+          notice={selectedNotice}
+          onClose={() => setSelectedNotice(null)}
+        />
       </main>
     </div>
   );
